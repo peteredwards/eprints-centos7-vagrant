@@ -1,0 +1,7 @@
+# file: roles/php/handlers/main.yml
+---
+
+- name: restart httpd
+  service:
+    name: httpd
+    state: restarted

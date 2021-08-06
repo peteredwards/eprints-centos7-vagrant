@@ -1,0 +1,83 @@
+---
+# file: roles/eprints/tasks/main.yml
+
+- name: Add EPrints 3.4 yum repository
+  yum_repository:
+    name: EPrints
+    description: EPrints YUM repo
+    baseurl: http://rpm.eprints.org/eprints3.4
+    enabled: yes
+    gpgcheck: no
+  notify: yum-clean-metadata
+
+- name: Install Optional EPrints Dependencies
+  yum:
+    name:
+      - perl-Geo-IP
+      - perl-Spreadsheet-WriteExcel
+      - perl-Image-ExifTool
+      - perl-LWP-Protocol-https
+    state: latest
+
+- name: Install CPANminus
+  yum:
+    name: perl-App-cpanminus
+    state: latest
+
+- name: Install Text::Refer from CPAN
+  community.general.cpanm:
+    name: Text::Refer
+
+- name: Install TeX::Encode from CPAN
+  community.general.cpanm:
+    name: TeX::Encode
+
+- name: Install EPrints 3.4
+  yum:
+    name: eprints
+    state: latest
+
+- name: Fix apache Include (make optional)
+  template:
+    src: eprints_apache.tpl
+    dest: /usr/share/eprints/cfg/apache.conf
+
+- name: Check for existence of flavours directory
+  stat:
+    path: /usr/share/eprints/flavours
+  register: f
+
+- name: Get EPrints publication flavour
+  get_url:
+    url: "{{ eprints_flavours_url }}"
+    dest: "/tmp/flavours.tar.gz"
+  when: f.stat.isdir is not defined
+  register: epflavours
+
+- name: Unpack EPrints publication flavour
+  unarchive:
+    src: "/tmp/flavours.tar.gz"
+    dest: /tmp
+    extra_opts:
+      - --strip-components=1
+    remote_src: yes
+  when: epflavours.changed
+
+- name: Move publication flavour to EPrints directory
+  command: mv /tmp/flavours /usr/share/eprints
+  when: epflavours.changed
+
+- name: Change ownership of flavours directory
+  file:
+    path: /usr/share/eprints/flavours
+    state: directory
+    owner: eprints
+    group: eprints
+    recurse: yes
+  when: epflavours.changed
+
+- name: Restart the httpd service
+  service: 
+    name: httpd 
+    state: restarted
+

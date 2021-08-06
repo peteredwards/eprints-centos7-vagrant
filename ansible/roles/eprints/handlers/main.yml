@@ -1,0 +1,7 @@
+---
+# file: roles/eprints/handlers/main.yml
+
+- name: yum-clean-metadata
+  command: yum clean metadata
+  args:
+    warn: no

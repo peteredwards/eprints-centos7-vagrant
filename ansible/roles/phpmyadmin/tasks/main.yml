@@ -1,0 +1,30 @@
+# file: roles/phpmyadmin/tasks/main.yml
+---
+
+- name: Install phpmyadmin
+  yum:
+    name: phpmyadmin
+    state: present
+    enablerepo: remi,remi-php74
+  notify: restart httpd 
+
+- name: Copy conf for apache
+  template:
+    src: phpmyadmin.tpl
+    dest: /etc/httpd/conf.d/phpmyadmin.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Setting firewall rules for phpmyadmin
+  firewalld:
+    zone: public
+    port: 9000/tcp
+    permanent: true
+    state: enabled
+
+- name: Flush iptables
+  shell: iptables -F
+
+- name: Restarting httpd
+  shell: systemctl restart httpd

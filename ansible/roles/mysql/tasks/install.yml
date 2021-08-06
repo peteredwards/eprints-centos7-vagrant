@@ -1,0 +1,15 @@
+# file: roles/mysql/tasks/install.yml
+
+- name: Install Mariadb packages
+  yum:
+    name:
+     - mariadb-server
+     - mariadb
+     - MySQL-python
+    state: latest
+
+- name: Start the mariadb service
+  service:
+    name: mariadb
+    state: started
+    enabled: true

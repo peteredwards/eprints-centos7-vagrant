@@ -1,0 +1,13 @@
+---
+# file init/vars/main.yml
+
+base_packages:
+  - git
+  - nano
+  - curl
+  - gcc
+  - kernel-devel
+  - wget
+  - vim
+  - man
+  - unzip

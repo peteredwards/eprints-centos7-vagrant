@@ -1,0 +1,23 @@
+# file: roles/init/tasks/main.yml
+---
+
+- name: Enable firewall
+  systemd:
+    name: firewalld
+    enabled: yes
+    state: started
+
+- name: Install EPEL repositories
+  yum:
+    name: "epel-release"
+    state: latest
+
+- name: Update packages
+  yum:
+    name: "*"
+    state: latest
+
+- name: Install base packages
+  yum: 
+    name: "{{ base_packages }}"
+    state: present
